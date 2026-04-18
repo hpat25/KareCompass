@@ -1,23 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import providers from "./data/providers";
+import { processProviders } from "./logic/scoring";
 
 function App() {
+  const user = {
+    budget: 100,
+    insurance: "Aetna"
+  };
+
+  const results = processProviders(providers, user);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>KareCompass</h1>
+
+      {results.map((p) => (
+        <div key={p.id} style={{ marginBottom: "20px" }}>
+          <h2>{p.name}</h2>
+          <p>Cost: ${p.adjustedCost.toFixed(2)}</p>
+          <p>Affordability: {p.affordabilityScore}</p>
+          <p>Accessibility: {p.accessibilityScore}</p>
+          <p>Final Score: {p.finalScore}</p>
+        </div>
+      ))}
     </div>
   );
 }

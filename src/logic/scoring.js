@@ -28,17 +28,42 @@ export function affordabilityScore(provider, user) {
 export function processProviders(providers, user) {
   const updated = providers.map(p => {
     const adjustedCost = adjustCost(p, user.insurance);
-    const score = affordabilityScore(p, user);
+
+    const affordability = affordabilityScore(p, user);
+    const accessibility = accessibilityScore(p);
+
+    // combine both (you can tweak weights later)
+    const finalScore = (affordability * 0.6) + (accessibility * 0.4);
 
     return {
       ...p,
       adjustedCost,
-      score
+      affordabilityScore: affordability,
+      accessibilityScore: accessibility,
+      finalScore: Math.round(finalScore)
     };
   });
 
-  // sort best → worst
-  updated.sort((a, b) => b.score - a.score);
+  //best to wors
+  updated.sort((a, b) => b.finalScore - a.finalScore);
 
   return updated;
+}
+
+
+export function accessibilityScore(provider) {
+  let score = 100;
+
+  // wait time (big factor)
+  score -= provider.waitTimeDays * 5;
+
+  // distance
+  score -= provider.distanceMiles * 2;
+
+  // telehealth bonus
+  if (provider.telehealth) {
+    score += 15;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
