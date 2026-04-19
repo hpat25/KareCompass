@@ -12,8 +12,62 @@ const apiKey =
   process.env.GEMINI_API_KEY ||
   process.env.API_KEY;
 
+// These keywords let the chat handle "I need a pediatrician"-style questions.
+const specialtyKeywords = {
+  pediatrics: ["pediatrics", "pediatric", "kids", "children", "child"],
+  dental: ["dental", "dentist", "teeth", "tooth", "oral"],
+  mental_health: ["mental health", "psychiatry", "psychiatric", "therapy", "therapist", "counseling", "counselling", "behavioral health"],
+  womens_health: ["women", "women's health", "womens health", "ob/gyn", "obgyn", "gynecology", "pregnancy", "prenatal"],
+  sexual_health: ["sexual health", "sti", "std", "hiv", "testing"],
+  primary_care: ["primary care", "family medicine", "family doctor", "general doctor", "general practice"],
+  vision: ["vision", "eye", "optometry"],
+  immunizations: ["immunization", "vaccine", "vaccination", "shots"],
+};
+
+function matchesSpecialty(provider, question) {
+  const text = [
+    provider.name,
+    provider.type,
+    ...(Array.isArray(provider.services) ? provider.services : [provider.services]),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return Object.values(specialtyKeywords).some((keywords) => {
+    const askedForKeyword = keywords.some((keyword) => question.includes(keyword));
+    const providerHasKeyword = keywords.some((keyword) => text.includes(keyword));
+    return askedForKeyword && providerHasKeyword;
+  });
+}
+
+function buildSpecialtyContext(providers, question) {
+  if (!Array.isArray(providers) || !providers.length) {
+    return "";
+  }
+
+  const lowered = question.toLowerCase();
+  const specialtyMatches = providers
+    .filter((provider) => matchesSpecialty(provider, lowered))
+    .sort((a, b) => (b.finalScore || 0) - (a.finalScore || 0))
+    .slice(0, 5);
+
+  if (!specialtyMatches.length) {
+    return "";
+  }
+
+  // Keep the provider context short so the response stays readable.
+  const summary = specialtyMatches
+    .map((provider) => {
+      return `- ${provider.name} | estimated cost: $${provider.adjustedCost?.toFixed?.(2) ?? provider.adjustedCost}`;
+    })
+    .join("\n");
+
+  return `Relevant providers for this question:\n${summary}`;
+}
+
 app.post("/ai", async (req, res) => {
-  const { provider, question, type } = req.body;
+  const { provider, providers, question, type, user } = req.body;
 
   if (!apiKey) {
     res.status(500).json({
@@ -23,6 +77,7 @@ app.post("/ai", async (req, res) => {
   }
 
   try {
+    // The prompt keeps definition questions and provider questions in one endpoint.
     const prompt = `
 You are KareCompass AI.
 
@@ -39,12 +94,19 @@ INSTRUCTIONS:
 
 - If type is "provider":
   -> Use provider data to answer.
+  -> If the user is asking for a type of doctor or service, give a short, clean recommendation list.
+  -> For recommendation lists, only include provider name and estimated cost.
+  -> Format recommendation lists as one provider per line.
+  -> Do not include raw notes like county, type, score, or services unless the user explicitly asks.
 
 Provider (only use if needed):
 Name: ${provider?.name}
 Cost: ${provider?.adjustedCost}
 Wait time: ${provider?.waitTimeDays}
 Score: ${provider?.finalScore}
+Insurance: ${user?.insurance || "No insurance selected"}
+
+${buildSpecialtyContext(providers, question)}
 
 Answer clearly and directly.
 `;

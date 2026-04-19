@@ -3,6 +3,7 @@ import { adjustCost } from "./insurance";
 export function affordabilityScore(provider, user) {
   const cost = adjustCost(provider, user.insurance);
 
+  // Start from a perfect score and subtract cost/access barriers.
   let score=100;
 
   //Cost impact
@@ -41,7 +42,7 @@ export function processProviders(providers, user) {
     };
   });
 
-  //best to wors
+  // Sort highest-scoring providers to the top for ranking and AI fallback.
   updated.sort((a, b) => b.finalScore - a.finalScore);
 
   return updated;

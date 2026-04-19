@@ -16,7 +16,7 @@
     <section class="mapCard" aria-label="KC Metro map">
       <header class="brand" aria-label="KareCompass header">
         <div class="brandLeft">
-          <div class="brandName"><span style="color:#dc2626;">K</span>are<span style="color:#dc2626;">C</span>ompass</div>
+          <img src="/title.png" alt="KareCompass" class="brandTitleImage" />
           <div class="brandTagline">An interactive tool for identifying affordable healthcare providers and increasing awareness for healthcare disparities in the Kansas City metropolitan area.</div>
         </div>
         <div class="legend" id="mapLegend">
@@ -241,6 +241,7 @@
     let currentProviders = [];
     let selectedCounty = null;
     let selectedPin = null;
+    // Match each outbound AI request with the reply that comes back from React.
     const pendingAiRequests = new Map();
 
     function getSelectedProvider() {
@@ -358,6 +359,7 @@
     }
 
     function syncMapState(animatePins = true) {
+      // County selection controls both the highlight state and visible pins.
       mapLegend.classList.toggle("is-visible", Boolean(selectedCounty));
       applyCountyClasses();
       renderPins(animatePins);
@@ -466,6 +468,7 @@
 
       return new Promise((resolve) => {
         pendingAiRequests.set(requestId, resolve);
+        // React forwards this request to the backend and posts the answer back here.
         window.parent.postMessage(
           {
             type: "ASK_AI",

@@ -47,6 +47,7 @@ function App() {
     }
 
     function pushProviders() {
+      // Keep the iframe in sync with the latest scored provider list.
       postToMap(iframe, {
         type: "LOAD_PROVIDERS",
         data: results,
@@ -68,6 +69,7 @@ function App() {
       }
 
       if (event.data.type === "ASK_AI") {
+        // Fall back to the highest-ranked provider when no pin is selected.
         const provider =
           results.find((item) => item.id === event.data.provider?.id) ||
           event.data.provider ||
@@ -78,6 +80,7 @@ function App() {
         try {
           const text = await getAIExplanation(
             provider,
+            results,
             currentUser,
             event.data.question,
             detectQuestionType(event.data.question)

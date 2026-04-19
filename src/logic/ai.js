@@ -1,4 +1,4 @@
-export async function getAIExplanation(provider, user, question, type) {
+export async function getAIExplanation(provider, providers, user, question, type) {
   const res = await fetch("http://localhost:5001/ai", {
     method: "POST",
     headers: {
@@ -6,6 +6,7 @@ export async function getAIExplanation(provider, user, question, type) {
     },
     body: JSON.stringify({
       provider,
+      providers,
       user,
       question,
       type
