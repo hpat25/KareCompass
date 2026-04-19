@@ -1,6 +1,6 @@
 export function adjustCost(provider, userInsurance) {
   if (!userInsurance) {
-    return provider.baseCost;
+    return Math.max(provider.baseCost, 100);
   }
 
   if (provider.acceptsInsurance.includes(userInsurance)) {

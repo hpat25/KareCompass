@@ -1,12 +1,22 @@
-export function getAIRecommendation(providers) {
-  if (!providers.length) {
-    return "No providers found.";
+export async function getAIExplanation(provider, user, question, type) {
+  const res = await fetch("http://localhost:5001/ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      provider,
+      user,
+      question,
+      type
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.error || "KareCompass AI request failed");
   }
 
-  const best = providers[0];
-
-  return `Best option: ${best.name}.
-Estimated cost: $${best.adjustedCost.toFixed(2)}.
-Score: ${best.score}/100.
-This option is recommended based on affordability, distance, and wait time.`;
+  return data.text;
 }
