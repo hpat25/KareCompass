@@ -23,6 +23,4 @@ npm install
 npm start
 
 The Team:
-Honey Patel
-Emily Messenger 
-Reva Mahesh
+Honey Patel, Emily Messenger, and Reva Mahesh, 
