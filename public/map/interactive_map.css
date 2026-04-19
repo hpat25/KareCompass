@@ -594,13 +594,13 @@ body {
   height: 100%;
   z-index: 9999;
 
-  pointer-events: none; /* 👈 important */
+  pointer-events: none; /* important */
 }
 
 .pin {
   position: absolute;
   z-index: 10000;
-  pointer-events: auto; /* 👈 THIS makes pins clickable */
+  pointer-events: auto; /*  makes pins clickable */
 }
 
 .county {

@@ -18,10 +18,8 @@ export function affordabilityScore(provider, user) {
   //Distance 
   score -= provider.distanceMiles * 1.5;
 
-  //Rating 
   score += provider.rating * 2;
 
-  //between 0–100
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
@@ -32,7 +30,6 @@ export function processProviders(providers, user) {
     const affordability = affordabilityScore(p, user);
     const accessibility = accessibilityScore(p);
 
-    // combine both (you can tweak weights later)
     const finalScore = (affordability * 0.6) + (accessibility * 0.4);
 
     return {
@@ -54,13 +51,11 @@ export function processProviders(providers, user) {
 export function accessibilityScore(provider) {
   let score = 100;
 
-  // wait time (big factor)
   score -= provider.waitTimeDays * 5;
 
-  // distance
+  //distance
   score -= provider.distanceMiles * 2;
 
-  // telehealth bonus
   if (provider.telehealth) {
     score += 15;
   }
